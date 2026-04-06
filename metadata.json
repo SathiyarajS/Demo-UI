@@ -1,0 +1,7 @@
+{
+  "name": "Wedding Planner Premium",
+  "description": "A premium planner-first wedding management platform with guest, couple, planner, and photographer experiences.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
