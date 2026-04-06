@@ -21,7 +21,8 @@ import {
   Globe,
   CheckCircle2,
   Star,
-  Share2
+  Share2,
+  X
 } from 'lucide-react';
 
 import { 
@@ -53,7 +54,8 @@ import {
   UploadGalleryView, 
   AIMatchesView, 
   DeliveryTrackingView, 
-  CoupleSelectionsView 
+  CoupleSelectionsView,
+  DuplicateReviewView
 } from './components/photographer/PhotographerViews';
 import { CouplePortal } from './components/couple/CouplePortal';
 
@@ -79,6 +81,7 @@ export default function App() {
   const [selectedWedding, setSelectedWedding] = useState<Wedding>(MOCK_WEDDINGS[0]);
   const [currentTheme, setCurrentTheme] = useState<WeddingTheme>(THEMES.find(t => t.id === selectedWedding.themeId) || THEMES[0]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Sync theme when wedding changes
   useEffect(() => {
@@ -106,7 +109,7 @@ export default function App() {
       case 'weddings':
         return <WeddingsListView setCurrentScreen={setCurrentScreen} setSelectedWedding={setSelectedWedding} />;
       case 'wedding-detail':
-        return <WeddingDetailView selectedWedding={selectedWedding} setCurrentScreen={setCurrentScreen} setAppMode={setAppMode} />;
+        return <WeddingDetailView selectedWedding={selectedWedding} setCurrentScreen={setCurrentScreen} setAppMode={setAppMode} setIsShareModalOpen={setIsShareModalOpen} />;
       case 'websites':
         return <WebsiteManagementView selectedWedding={selectedWedding} />;
       case 'invitations':
@@ -125,6 +128,8 @@ export default function App() {
         return <DeliveryTrackingView />;
       case 'selections':
         return <CoupleSelectionsView />;
+      case 'duplicates':
+        return <DuplicateReviewView />;
       case 'schedule':
         return <PlaceholderView title="Wedding Schedule" />;
       case 'gallery':
@@ -185,6 +190,7 @@ export default function App() {
                   <SidebarItem icon={UserCheck} label="Matches" active={currentScreen === 'matches'} onClick={() => { setCurrentScreen('matches'); setIsSidebarOpen(false); }} />
                   <SidebarItem icon={CheckCircle2} label="Deliveries" active={currentScreen === 'deliveries'} onClick={() => { setCurrentScreen('deliveries'); setIsSidebarOpen(false); }} />
                   <SidebarItem icon={Star} label="Selections" active={currentScreen === 'selections'} onClick={() => { setCurrentScreen('selections'); setIsSidebarOpen(false); }} />
+                  <SidebarItem icon={ImageIcon} label="Duplicates" active={currentScreen === 'duplicates'} onClick={() => { setCurrentScreen('duplicates'); setIsSidebarOpen(false); }} />
                 </>
               )}
               {appMode === 'COUPLE' && (
@@ -226,7 +232,7 @@ export default function App() {
             <div className="flex items-center gap-4">
               {appMode === 'PLANNER' && (
                 <button 
-                  onClick={() => alert('Prototype Share Link: https://wedding-planner-demo.ais.dev/share/sarah-planner')}
+                  onClick={() => setIsShareModalOpen(true)}
                   className="hidden md:flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-all"
                 >
                   <Share2 size={16} />
@@ -293,7 +299,75 @@ export default function App() {
         ))}
       </div>
 
-      {/* Floating Guest Mode Toggle for Demo - Removed as it's now in the switcher */}
+      {/* Share Prototype Modal */}
+      <AnimatePresence>
+        {isShareModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsShareModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-10 space-y-8"
+            >
+              <div className="flex justify-between items-start">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold tracking-tight">Share Prototype</h2>
+                  <p className="text-slate-500 font-medium">Send this link to your clients to showcase the wedding experience.</p>
+                </div>
+                <button onClick={() => setIsShareModalOpen(false)} className="p-3 hover:bg-slate-100 rounded-2xl transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="section-label">Prototype Link</label>
+                  <div className="flex gap-3">
+                    <input 
+                      readOnly 
+                      value={`https://wedding-planner-demo.ais.dev/share/${selectedWedding.id}`}
+                      className="input-field flex-1 bg-slate-50 border-slate-100 text-slate-500 text-sm"
+                    />
+                    <button className="btn-primary px-6 py-3 text-sm">Copy</button>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-indigo-50 rounded-3xl border border-indigo-100 space-y-4">
+                  <div className="flex items-center gap-3 text-indigo-600">
+                    <Globe size={20} />
+                    <p className="font-bold text-sm">What they'll see</p>
+                  </div>
+                  <ul className="space-y-2">
+                    {[
+                      'Full Guest Website experience',
+                      'Private Couple Dashboard',
+                      'Photographer Gallery workflow',
+                      'Your custom planner branding'
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-center gap-2 text-xs text-indigo-900/60 font-medium">
+                        <CheckCircle2 size={14} className="text-indigo-400" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <button className="flex-1 btn-secondary py-4 font-bold">Email to Couple</button>
+                <button className="flex-1 btn-primary py-4 font-bold">Done</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

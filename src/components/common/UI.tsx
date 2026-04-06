@@ -34,3 +34,33 @@ export const Badge = ({ children, variant = 'default' }: { children: React.React
     </span>
   );
 };
+
+export const EmptyState = ({ icon: Icon, title, description, actionLabel, onAction }: { icon: any, title: string, description: string, actionLabel?: string, onAction?: () => void }) => (
+  <div className="flex flex-col items-center justify-center p-20 text-center space-y-6">
+    <div className="w-24 h-24 bg-slate-100 rounded-[2.5rem] flex items-center justify-center text-slate-300">
+      <Icon size={48} />
+    </div>
+    <div className="space-y-2">
+      <h3 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h3>
+      <p className="text-slate-500 max-w-sm mx-auto font-medium">{description}</p>
+    </div>
+    {actionLabel && (
+      <button onClick={onAction} className="btn-primary py-3 px-8 shadow-xl">{actionLabel}</button>
+    )}
+  </div>
+);
+
+export const SuccessState = ({ title, description, actionLabel, onAction }: { title: string, description: string, actionLabel?: string, onAction?: () => void }) => (
+  <div className="flex flex-col items-center justify-center p-20 text-center space-y-6">
+    <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-[2.5rem] flex items-center justify-center shadow-xl shadow-emerald-500/10">
+      <CheckCircle2 size={48} />
+    </div>
+    <div className="space-y-2">
+      <h3 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h3>
+      <p className="text-slate-500 max-w-sm mx-auto font-medium">{description}</p>
+    </div>
+    {actionLabel && (
+      <button onClick={onAction} className="btn-primary py-3 px-8 shadow-xl">{actionLabel}</button>
+    )}
+  </div>
+);

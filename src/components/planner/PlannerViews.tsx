@@ -111,11 +111,13 @@ export const WeddingsListView = ({ setCurrentScreen, setSelectedWedding }: { set
 export const WeddingDetailView = ({ 
   selectedWedding, 
   setCurrentScreen, 
-  setAppMode 
+  setAppMode,
+  setIsShareModalOpen
 }: { 
   selectedWedding: Wedding, 
   setCurrentScreen: (s: string) => void,
-  setAppMode: (m: any) => void
+  setAppMode: (m: any) => void,
+  setIsShareModalOpen: (o: boolean) => void
 }) => (
   <div className="space-y-10">
     <div className="flex justify-between items-end">
@@ -129,6 +131,13 @@ export const WeddingDetailView = ({
         <p className="text-slate-500 font-medium">{new Date(selectedWedding.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} • {selectedWedding.city}, {selectedWedding.country}</p>
       </div>
       <div className="flex gap-4">
+        <button 
+          onClick={() => setIsShareModalOpen(true)}
+          className="btn-secondary flex items-center gap-3 py-4 px-8 text-sm font-bold shadow-sm"
+        >
+          <Share2 size={20} />
+          <span>Share Prototype</span>
+        </button>
         <Badge variant={selectedWedding.status === 'Upcoming' ? 'info' : 'success'}>
           {selectedWedding.status}
         </Badge>

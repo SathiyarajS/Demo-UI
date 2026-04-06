@@ -270,6 +270,17 @@ export const GuestWebsite = ({ selectedWedding, currentTheme, setAppMode }: Gues
         )}
       </AnimatePresence>
 
+      {/* Floating Back to Planner Button (Demo Only) */}
+      <div className="fixed bottom-8 right-8 z-[100]">
+        <button 
+          onClick={() => setAppMode('PLANNER')}
+          className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-full font-bold shadow-2xl hover:scale-105 transition-all active:scale-95"
+        >
+          <ChevronRight size={20} className="rotate-180" />
+          <span>Back to Planner</span>
+        </button>
+      </div>
+
       {/* Footer */}
       <footer className="py-24 bg-white border-t border-slate-100 text-center space-y-6">
         <p className="font-serif italic text-4xl" style={{ color: currentTheme.accent }}>{selectedWedding.coupleNames}</p>
