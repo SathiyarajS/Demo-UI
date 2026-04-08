@@ -136,6 +136,10 @@ export default function App() {
         return <CouplePortal selectedWedding={selectedWedding} currentTheme={currentTheme} setAppMode={setAppMode} setCurrentScreen={setCurrentScreen} initialTab="gallery" />;
       case 'approvals':
         return <CouplePortal selectedWedding={selectedWedding} currentTheme={currentTheme} setAppMode={setAppMode} setCurrentScreen={setCurrentScreen} initialTab="approvals" />;
+      case 'catalog':
+        return <CouplePortal selectedWedding={selectedWedding} currentTheme={currentTheme} setAppMode={setAppMode} setCurrentScreen={setCurrentScreen} initialTab="catalog" />;
+      case 'gifting':
+        return <CouplePortal selectedWedding={selectedWedding} currentTheme={currentTheme} setAppMode={setAppMode} setCurrentScreen={setCurrentScreen} initialTab="gifting" />;
       default:
         return <PlannerDashboard setCurrentScreen={setCurrentScreen} setSelectedWedding={setSelectedWedding} />;
     }
@@ -197,9 +201,10 @@ export default function App() {
                 <>
                   <SidebarItem icon={Home} label="Dashboard" active={currentScreen === 'dashboard'} onClick={() => { setCurrentScreen('dashboard'); setIsSidebarOpen(false); }} />
                   <SidebarItem icon={Calendar} label="Schedule" active={currentScreen === 'schedule'} onClick={() => { setCurrentScreen('schedule'); setIsSidebarOpen(false); }} />
-                  <SidebarItem icon={Palette} label="Decor Selection" active={currentScreen === 'decor-catalog'} onClick={() => { setCurrentScreen('decor-catalog'); setIsSidebarOpen(false); }} />
+                  <SidebarItem icon={Palette} label="Catalog" active={currentScreen === 'catalog'} onClick={() => { setCurrentScreen('catalog'); setIsSidebarOpen(false); }} />
                   <SidebarItem icon={ImageIcon} label="Gallery" active={currentScreen === 'gallery'} onClick={() => { setCurrentScreen('gallery'); setIsSidebarOpen(false); }} />
                   <SidebarItem icon={CheckCircle2} label="Approvals" active={currentScreen === 'approvals'} onClick={() => { setCurrentScreen('approvals'); setIsSidebarOpen(false); }} />
+                  <SidebarItem icon={Heart} label="Gifting" active={currentScreen === 'gifting'} onClick={() => { setCurrentScreen('gifting'); setIsSidebarOpen(false); }} />
                 </>
               )}
             </nav>

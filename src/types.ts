@@ -54,6 +54,28 @@ export interface ScheduleItem {
   time: string;
   date: string;
   desc: string;
+  expectedCount?: number;
+  confirmedCount?: number;
+}
+
+export interface ApprovalRequest {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  plannerNote?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  category: 'Custom' | 'Standard';
+  price?: number;
+}
+
+export interface CatalogItem {
+  id: string;
+  name: string;
+  category: 'Food' | 'Decor';
+  image: string;
+  description: string;
+  price: number;
 }
 
 export interface Wedding {
@@ -71,6 +93,12 @@ export interface Wedding {
   plannerBranding: string;
   websiteUrl: string;
   schedule: ScheduleItem[];
+  budget: {
+    total: number;
+    spent: number;
+  };
+  approvals: ApprovalRequest[];
+  selectedCatalogItems: string[]; // IDs of CatalogItem
 }
 
 export interface Guest {
@@ -228,10 +256,19 @@ export const MOCK_WEDDINGS: Wedding[] = [
     plannerBranding: 'Elegant Events by Sarah',
     websiteUrl: 'sarah-james.wedding.com',
     schedule: [
-      { id: 's1', name: 'Ceremony', time: '4:00 PM', date: 'June 15, 2026', desc: 'Exchange of vows at the Central Park Conservatory Garden.' },
-      { id: 's2', name: 'Cocktail Hour', time: '5:30 PM', date: 'June 15, 2026', desc: 'Drinks and hors d\'oeuvres on the terrace.' },
-      { id: 's3', name: 'Reception', time: '7:00 PM', date: 'June 15, 2026', desc: 'Dinner, dancing, and celebration in the Grand Ballroom.' }
-    ]
+      { id: 's1', name: 'Ceremony', time: '4:00 PM', date: 'June 15, 2026', desc: 'Exchange of vows at the Central Park Conservatory Garden.', expectedCount: 150, confirmedCount: 120 },
+      { id: 's2', name: 'Cocktail Hour', time: '5:30 PM', date: 'June 15, 2026', desc: 'Drinks and hors d\'oeuvres on the terrace.', expectedCount: 150, confirmedCount: 110 },
+      { id: 's3', name: 'Reception', time: '7:00 PM', date: 'June 15, 2026', desc: 'Dinner, dancing, and celebration in the Grand Ballroom.', expectedCount: 150, confirmedCount: 115 }
+    ],
+    budget: {
+      total: 50000,
+      spent: 32500
+    },
+    approvals: [
+      { id: 'a1', title: 'Vintage Rolls Royce', description: 'Classic 1950s Rolls Royce for the couple\'s entrance.', image: 'https://images.unsplash.com/photo-1527247043589-98e6ac08f56c?auto=format&fit=crop&q=80&w=800', plannerNote: 'Found a great local vendor with this specific model.', status: 'pending', category: 'Custom', price: 1200 },
+      { id: 'a2', title: 'Custom 5-Tier Cake', description: 'Vanilla sponge with raspberry filling and gold leaf accents.', image: 'https://images.unsplash.com/photo-1535254973040-607b474cb8c2?auto=format&fit=crop&q=80&w=800', status: 'approved', category: 'Custom', price: 850 }
+    ],
+    selectedCatalogItems: ['c1', 'c3']
   },
   {
     id: 'w-2',
@@ -248,9 +285,22 @@ export const MOCK_WEDDINGS: Wedding[] = [
     plannerBranding: 'Royal Weddings Co.',
     websiteUrl: 'priya-arjun.wedding.com',
     schedule: [
-      { id: 's1', name: 'Sangeet', time: '6:00 PM', date: 'August 18, 2026', desc: 'A night of music and dance.' },
-      { id: 's2', name: 'Wedding Ceremony', time: '10:00 AM', date: 'August 20, 2026', desc: 'Traditional Vedic ceremony.' },
-      { id: 's3', name: 'Reception', time: '7:30 PM', date: 'August 20, 2026', desc: 'Grand reception for family and friends.' }
-    ]
+      { id: 's1', name: 'Sangeet', time: '6:00 PM', date: 'August 18, 2026', desc: 'A night of music and dance.', expectedCount: 400, confirmedCount: 320 },
+      { id: 's2', name: 'Wedding Ceremony', time: '10:00 AM', date: 'August 20, 2026', desc: 'Traditional Vedic ceremony.', expectedCount: 500, confirmedCount: 450 },
+      { id: 's3', name: 'Reception', time: '7:30 PM', date: 'August 20, 2026', desc: 'Grand reception for family and friends.', expectedCount: 500, confirmedCount: 480 }
+    ],
+    budget: {
+      total: 150000,
+      spent: 85000
+    },
+    approvals: [],
+    selectedCatalogItems: []
   }
+];
+
+export const CATALOG_ITEMS: CatalogItem[] = [
+  { id: 'c1', name: 'Traditional Thali', category: 'Food', image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&q=80&w=800', description: 'Full traditional Indian meal with 12 items.', price: 45 },
+  { id: 'c2', name: 'Continental Buffet', category: 'Food', image: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=800', description: 'Wide variety of international cuisines.', price: 55 },
+  { id: 'c3', name: 'Crystal Centerpieces', category: 'Decor', image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800', description: 'Elegant crystal vases with white roses.', price: 120 },
+  { id: 'c4', name: 'Fairylight Canopy', category: 'Decor', image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800', description: 'Warm fairy lights covering the entire ceiling.', price: 2500 }
 ];

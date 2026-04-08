@@ -19,8 +19,12 @@ import {
   Share2,
   Settings,
   Heart,
-  Palette
+  Palette,
+  Sparkles,
+  RefreshCw,
+  BarChart3
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Card, Badge } from '../common/UI';
 import { Wedding, MOCK_WEDDINGS } from '../../types';
 
@@ -194,48 +198,66 @@ export const WeddingDetailView = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card className="p-8 space-y-6 border-none shadow-xl">
-            <h3 className="text-xl font-bold tracking-tight">Planning Progress</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold tracking-tight">Budget Guardrail</h3>
+              <Badge variant={selectedWedding.budget.spent / selectedWedding.budget.total > 0.9 ? 'warning' : 'success'}>
+                {Math.round((selectedWedding.budget.spent / selectedWedding.budget.total) * 100)}% Used
+              </Badge>
+            </div>
             <div className="space-y-6">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm font-bold">
-                  <span className="text-slate-500">Overall Completion</span>
-                  <span className="text-slate-900">65%</span>
+                  <span className="text-slate-500">Total Budget</span>
+                  <span className="text-slate-900">₹{selectedWedding.budget.total.toLocaleString()}</span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-slate-900" style={{ width: '65%' }} />
+                <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(selectedWedding.budget.spent / selectedWedding.budget.total) * 100}%` }}
+                    className={`h-full ${selectedWedding.budget.spent / selectedWedding.budget.total > 0.9 ? 'bg-amber-500' : 'bg-emerald-500'}`} 
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Guests</p>
-                  <p className="text-xl font-bold text-slate-900">112 / 150</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Spent</p>
+                  <p className="text-lg font-bold text-slate-900">₹{selectedWedding.budget.spent.toLocaleString()}</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Budget</p>
-                  <p className="text-xl font-bold text-slate-900">72%</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Remaining</p>
+                  <p className="text-lg font-bold text-slate-900">₹{(selectedWedding.budget.total - selectedWedding.budget.spent).toLocaleString()}</p>
                 </div>
               </div>
             </div>
           </Card>
 
           <Card className="p-8 space-y-6 border-none shadow-xl">
-            <h3 className="text-xl font-bold tracking-tight">Recent Approvals</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold tracking-tight">Recent Approvals</h3>
+              <button onClick={() => setCurrentScreen('invitations')} className="text-xs font-bold text-indigo-600 hover:underline">View All</button>
+            </div>
             <div className="space-y-4">
-              {[
-                { item: 'Floral Concept', status: 'Approved', date: '2h ago' },
-                { item: 'Catering Menu', status: 'Pending', date: '1d ago' },
-                { item: 'Music List', status: 'Approved', date: '3d ago' }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between">
+              {selectedWedding.approvals.slice(0, 3).map((item, i) => (
+                <div key={i} className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-2xl transition-all group cursor-pointer">
                   <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${item.status === 'Approved' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                    <p className="text-sm font-bold text-slate-900">{item.item}</p>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.status === 'approved' ? 'bg-emerald-50 text-emerald-600' : item.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                      {item.status === 'approved' ? <CheckCircle2 size={18} /> : item.status === 'rejected' ? <X size={18} /> : <Clock size={18} />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">{item.title}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{item.category}</p>
+                    </div>
                   </div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.date}</p>
+                  <Badge variant={item.status === 'approved' ? 'success' : item.status === 'rejected' ? 'default' : 'warning'}>
+                    {item.status}
+                  </Badge>
                 </div>
               ))}
             </div>
-            <button onClick={() => setCurrentScreen('invitations')} className="text-sm font-bold text-slate-900 hover:underline">View All Approvals</button>
+            <button className="w-full py-3 bg-slate-900 text-white rounded-2xl text-xs font-bold shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
+              <Plus size={14} />
+              Create Custom Approval
+            </button>
           </Card>
         </div>
       </div>
@@ -294,125 +316,329 @@ export const WeddingDetailView = ({
 );
 
 // --- Website Management View ---
-export const WebsiteManagementView = ({ selectedWedding }: { selectedWedding: Wedding }) => (
-  <div className="space-y-10">
-    <div className="flex justify-between items-end">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Website Management</h1>
-        <p className="text-slate-500 font-medium">Design and publish the wedding website for {selectedWedding.coupleNames}.</p>
-      </div>
-      <div className="flex gap-4">
-        <button className="btn-secondary flex items-center gap-3 py-4 px-8 text-sm font-bold shadow-sm">
-          <Eye size={20} />
-          <span>Preview Site</span>
-        </button>
-        <button className="btn-primary flex items-center gap-3 py-4 px-8 text-sm font-bold shadow-xl">
-          <Globe size={20} />
-          <span>Publish Website</span>
-        </button>
-      </div>
-    </div>
+export const WebsiteManagementView = ({ selectedWedding }: { selectedWedding: Wedding }) => {
+  const [isGenerating, setIsGenerating] = React.useState(false);
+  const [roughNotes, setRoughNotes] = React.useState('');
+  const [generatedContent, setGeneratedContent] = React.useState<{
+    welcome?: string;
+    family?: string;
+    story?: string;
+    invitation?: string;
+    event?: string;
+  } | null>(null);
+  const [publishStatus, setPublishStatus] = React.useState<'Draft' | 'Publishing' | 'Live'>(selectedWedding.status === 'Live' ? 'Live' : 'Draft');
+  const [showPublishModal, setShowPublishModal] = React.useState(false);
+  const [selectedTone, setSelectedTone] = React.useState('Family Oriented');
 
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-      <div className="lg:col-span-2 space-y-10">
-        <Card className="p-10 space-y-8 border-none shadow-xl">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold tracking-tight">Domain & URL</h2>
-            <Badge variant="success">Live</Badge>
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      setGeneratedContent({
+        welcome: `With hearts full of joy, the families of ${selectedWedding.coupleNames.split(' & ')[0]} and ${selectedWedding.coupleNames.split(' & ')[1]} invite you to witness the beginning of their beautiful journey together. Your presence and blessings mean the world to us as we celebrate this sacred union.`,
+        family: `The ${selectedWedding.coupleNames.split(' & ')[0].split(' ')[1] || 'Groom\'s'} and ${selectedWedding.coupleNames.split(' & ')[1].split(' ')[1] || 'Bride\'s'} families have long shared a bond of friendship and respect. This wedding is not just a union of two individuals, but a coming together of two families, rooted in tradition and love.`,
+        story: `From their first meeting arranged by family to the deep friendship that blossomed into love, ${selectedWedding.coupleNames} have found in each other a partner for life. Their journey is a testament to the beauty of shared values and the grace of destiny.`,
+        invitation: `We request the honor of your presence at the wedding ceremony of ${selectedWedding.coupleNames}. Join us as we celebrate love, family, and the traditions that bind us together.`,
+        event: `A traditional ceremony followed by a grand reception. We look forward to an evening of music, laughter, and heartfelt celebrations with our nearest and dearest.`
+      });
+      setIsGenerating(false);
+    }, 2000);
+  };
+
+  const handlePublish = () => {
+    setPublishStatus('Publishing');
+    setTimeout(() => {
+      setPublishStatus('Live');
+      setShowPublishModal(false);
+    }, 3000);
+  };
+
+  return (
+    <div className="space-y-10 pb-20">
+      <div className="flex justify-between items-end">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Website Management</h1>
+          <p className="text-slate-500 font-medium">Design and publish the wedding website for {selectedWedding.coupleNames}.</p>
+        </div>
+        <div className="flex gap-4">
+          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <div className={`w-2 h-2 rounded-full ${publishStatus === 'Live' ? 'bg-emerald-500' : publishStatus === 'Publishing' ? 'bg-amber-500 animate-pulse' : 'bg-slate-300'}`} />
+            <span className="text-sm font-bold text-slate-600">{publishStatus}</span>
           </div>
-          <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-between">
+          <button className="btn-secondary flex items-center gap-3 py-4 px-8 text-sm font-bold shadow-sm">
+            <Eye size={20} />
+            <span>Preview Site</span>
+          </button>
+          {publishStatus !== 'Live' && (
+            <button 
+              onClick={() => setShowPublishModal(true)}
+              disabled={publishStatus === 'Publishing'}
+              className="btn-primary flex items-center gap-3 py-4 px-8 text-sm font-bold shadow-xl disabled:opacity-50"
+            >
+              <Globe size={20} />
+              <span>{publishStatus === 'Publishing' ? 'Publishing...' : 'Publish Website'}</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2 space-y-10">
+          {/* Copy Generator Module */}
+          <Card className="p-10 space-y-8 border-none shadow-xl bg-white overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <Sparkles size={120} className="text-slate-900" />
+            </div>
+            <div className="relative z-10 space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+                  <Sparkles className="text-indigo-500" size={24} />
+                  Elegant Wedding Copy Generator
+                </h2>
+                <Badge variant="info">AI Powered</Badge>
+              </div>
+              
+              <div className="space-y-4">
+                <label className="section-label">Family / Couple Notes</label>
+                <textarea 
+                  value={roughNotes}
+                  onChange={(e) => setRoughNotes(e.target.value)}
+                  placeholder="Paste rough notes here (e.g., 'Sarah likes hiking, James is a doctor, families met in 2020, traditional but warm vibe...')"
+                  className="input-field min-h-[120px] py-4 resize-none"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {['Family Oriented', 'Elegant', 'Heartfelt', 'Traditional', 'Modern Warm'].map(tone => (
+                  <button 
+                    key={tone}
+                    onClick={() => setSelectedTone(tone)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${selectedTone === tone ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                  >
+                    {tone}
+                  </button>
+                ))}
+              </div>
+
+              <button 
+                onClick={handleGenerate}
+                disabled={isGenerating || !roughNotes}
+                className="btn-primary w-full py-4 flex items-center justify-center gap-3 shadow-xl disabled:opacity-50"
+              >
+                {isGenerating ? (
+                  <>
+                    <RefreshCw size={20} className="animate-spin" />
+                    <span>Generating Elegant Copy...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={20} />
+                    <span>✨ Generate Elegant Wedding Copy</span>
+                  </>
+                )}
+              </button>
+
+              {generatedContent && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-50">
+                  {[
+                    { title: 'Welcome Message', content: generatedContent.welcome },
+                    { title: 'Family Introduction', content: generatedContent.family },
+                    { title: 'Couple Story', content: generatedContent.story },
+                    { title: 'Invitation Text', content: generatedContent.invitation },
+                    { title: 'Event Description', content: generatedContent.event }
+                  ].map((card, i) => (
+                    <div key={i} className="p-6 bg-slate-50 rounded-3xl space-y-3 border border-slate-100 group relative">
+                      <div className="flex justify-between items-center">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{card.title}</p>
+                        <button className="p-2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-slate-900">
+                          <Settings size={14} />
+                        </button>
+                      </div>
+                      <p className="text-sm text-slate-700 leading-relaxed italic">"{card.content}"</p>
+                      <div className="flex gap-2 pt-2">
+                        <button className="text-[10px] font-bold text-indigo-600 hover:underline">Use in Website</button>
+                        <button className="text-[10px] font-bold text-slate-400 hover:underline">Edit Manually</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Card>
+
+          <Card className="p-10 space-y-8 border-none shadow-xl">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold tracking-tight">Domain & URL</h2>
+              <Badge variant={publishStatus === 'Live' ? 'success' : 'warning'}>{publishStatus}</Badge>
+            </div>
+            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm">
+                  <Globe size={24} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">weddingplanner.com/{selectedWedding.coupleNames.toLowerCase().replace(' & ', '-weds-')}</p>
+                  <p className="text-xs text-slate-400 font-medium">Primary Slug Preview</p>
+                </div>
+              </div>
+              <button className="p-3 hover:bg-white rounded-xl transition-all text-slate-400 hover:text-slate-900">
+                <ExternalLink size={20} />
+              </button>
+            </div>
+          </Card>
+
+          <Card className="p-10 space-y-8 border-none shadow-xl">
+            <h2 className="text-2xl font-bold tracking-tight">Page Configuration</h2>
+            <div className="space-y-4">
+              {[
+                { name: 'Home Page', status: 'Published', icon: Globe },
+                { name: 'Our Story', status: 'Published', icon: Heart },
+                { name: 'Schedule', status: 'Draft', icon: Clock },
+                { name: 'Gallery', status: 'Published', icon: Camera },
+                { name: 'RSVP', status: 'Published', icon: UserCheck }
+              ].map((page, i) => (
+                <div key={i} className="flex items-center justify-between p-6 hover:bg-slate-50 rounded-3xl transition-all group cursor-pointer">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 group-hover:text-slate-900 transition-colors">
+                      <page.icon size={24} />
+                    </div>
+                    <p className="font-bold text-slate-900">{page.name}</p>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <Badge variant={page.status === 'Published' ? 'success' : 'warning'}>{page.status}</Badge>
+                    <ChevronRight size={20} className="text-slate-200 group-hover:text-slate-900 transition-colors" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-1 space-y-10">
+          <Card className="p-10 space-y-8 border-none shadow-xl bg-slate-900 text-white overflow-hidden relative">
+            <div className="relative z-10 space-y-6">
+              <h2 className="text-2xl font-bold tracking-tight">Quick Actions</h2>
+              <div className="space-y-4">
+                <button className="w-full py-4 px-6 bg-white/10 hover:bg-white/20 rounded-2xl text-left font-bold transition-all flex items-center justify-between group">
+                  Edit Hero Section
+                  <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button className="w-full py-4 px-6 bg-white/10 hover:bg-white/20 rounded-2xl text-left font-bold transition-all flex items-center justify-between group">
+                  Update Story
+                  <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button className="w-full py-4 px-6 bg-white/10 hover:bg-white/20 rounded-2xl text-left font-bold transition-all flex items-center justify-between group">
+                  Manage RSVP Fields
+                  <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+            <Globe className="absolute -bottom-10 -right-10 w-48 h-48 text-white/5 rotate-12" />
+          </Card>
+
+          <Card className="p-10 space-y-6 border-none shadow-xl">
+            <h2 className="text-xl font-bold tracking-tight">Website Stats</h2>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-slate-500 font-medium">Total Visitors</p>
+                <p className="font-bold text-slate-900">1,240</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-slate-500 font-medium">RSVP Submissions</p>
+                <p className="font-bold text-slate-900">84</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-slate-500 font-medium">Photo Uploads</p>
+                <p className="font-bold text-slate-900">12</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Publish Confirmation Modal */}
+      <AnimatePresence>
+        {showPublishModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowPublishModal(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-10 space-y-8"
+            >
+              <div className="flex justify-between items-start">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold tracking-tight">Ready to Publish?</h2>
+                  <p className="text-slate-500 font-medium">This will make the wedding website live for all guests.</p>
+                </div>
+                <button onClick={() => setShowPublishModal(false)} className="p-3 hover:bg-slate-100 rounded-2xl transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-500 shadow-sm">
+                    <Globe size={24} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">weddingplanner.com/{selectedWedding.coupleNames.toLowerCase().replace(' & ', '-weds-')}</p>
+                    <p className="text-xs text-slate-400 font-medium">Live URL</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <button onClick={() => setShowPublishModal(false)} className="flex-1 btn-secondary py-4 font-bold">Cancel</button>
+                <button onClick={handlePublish} className="flex-1 btn-primary py-4 font-bold">🚀 Publish Now</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Success State after Publish */}
+      <AnimatePresence>
+        {publishStatus === 'Live' && !showPublishModal && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="fixed bottom-24 right-8 z-[150] w-96 bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-8 space-y-6"
+          >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm">
-                <Globe size={24} />
+              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500">
+                <CheckCircle2 size={24} />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900">weddingplanner.com/sarah-james</p>
-                <p className="text-xs text-slate-400 font-medium">Primary Domain</p>
+                <p className="font-bold text-slate-900">Website is Live!</p>
+                <p className="text-xs text-slate-500 font-medium">Successfully published to the web.</p>
               </div>
-            </div>
-            <button className="p-3 hover:bg-white rounded-xl transition-all text-slate-400 hover:text-slate-900">
-              <ExternalLink size={20} />
-            </button>
-          </div>
-          <div className="space-y-4">
-            <label className="section-label">Custom Domain</label>
-            <div className="flex gap-4">
-              <input className="input-field flex-1" placeholder="www.sarahandjames.com" />
-              <button className="btn-secondary px-8">Connect</button>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-10 space-y-8 border-none shadow-xl">
-          <h2 className="text-2xl font-bold tracking-tight">Page Configuration</h2>
-          <div className="space-y-4">
-            {[
-              { name: 'Home Page', status: 'Published', icon: Globe },
-              { name: 'Our Story', status: 'Published', icon: Heart },
-              { name: 'Schedule', status: 'Draft', icon: Clock },
-              { name: 'Gallery', status: 'Published', icon: Camera },
-              { name: 'RSVP', status: 'Published', icon: UserCheck }
-            ].map((page, i) => (
-              <div key={i} className="flex items-center justify-between p-6 hover:bg-slate-50 rounded-3xl transition-all group cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 group-hover:text-slate-900 transition-colors">
-                    <page.icon size={24} />
-                  </div>
-                  <p className="font-bold text-slate-900">{page.name}</p>
-                </div>
-                <div className="flex items-center gap-6">
-                  <Badge variant={page.status === 'Published' ? 'success' : 'warning'}>{page.status}</Badge>
-                  <ChevronRight size={20} className="text-slate-200 group-hover:text-slate-900 transition-colors" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      <div className="lg:col-span-1 space-y-10">
-        <Card className="p-10 space-y-8 border-none shadow-xl bg-slate-900 text-white overflow-hidden relative">
-          <div className="relative z-10 space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight">Quick Actions</h2>
-            <div className="space-y-4">
-              <button className="w-full py-4 px-6 bg-white/10 hover:bg-white/20 rounded-2xl text-left font-bold transition-all flex items-center justify-between group">
-                Edit Hero Section
-                <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="w-full py-4 px-6 bg-white/10 hover:bg-white/20 rounded-2xl text-left font-bold transition-all flex items-center justify-between group">
-                Update Story
-                <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="w-full py-4 px-6 bg-white/10 hover:bg-white/20 rounded-2xl text-left font-bold transition-all flex items-center justify-between group">
-                Manage RSVP Fields
-                <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              <button onClick={() => setPublishStatus('Draft')} className="ml-auto p-2 text-slate-300 hover:text-slate-900">
+                <X size={16} />
               </button>
             </div>
-          </div>
-          <Globe className="absolute -bottom-10 -right-10 w-48 h-48 text-white/5 rotate-12" />
-        </Card>
-
-        <Card className="p-10 space-y-6 border-none shadow-xl">
-          <h2 className="text-xl font-bold tracking-tight">Website Stats</h2>
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-slate-500 font-medium">Total Visitors</p>
-              <p className="font-bold text-slate-900">1,240</p>
+            <div className="flex gap-3">
+              <button className="flex-1 btn-secondary py-3 text-xs font-bold flex items-center justify-center gap-2">
+                <Share2 size={14} />
+                Copy Link
+              </button>
+              <button className="flex-1 btn-primary py-3 text-xs font-bold flex items-center justify-center gap-2">
+                <ExternalLink size={14} />
+                Open Site
+              </button>
             </div>
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-slate-500 font-medium">RSVP Submissions</p>
-              <p className="font-bold text-slate-900">84</p>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-slate-500 font-medium">Photo Uploads</p>
-              <p className="font-bold text-slate-900">12</p>
-            </div>
-          </div>
-        </Card>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  </div>
-);
+  );
+};
 
 // --- Invitation Management View ---
 export const InvitationView = ({ selectedWedding }: { selectedWedding: Wedding }) => (
@@ -551,6 +777,55 @@ export const GuestListView = ({ selectedWedding }: { selectedWedding: Wedding })
         <Badge variant="warning">Follow up needed</Badge>
       </Card>
     </div>
+
+    {/* Multi-Event Headcount Tracker */}
+    <Card className="p-10 space-y-8 border-none shadow-xl bg-white">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+          <BarChart3 className="text-indigo-500" size={24} />
+          Multi-Event Headcount Tracker
+        </h2>
+        <Badge variant="info">Live RSVP Data</Badge>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {selectedWedding.schedule.map((event, i) => (
+          <div key={i} className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-6">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <p className="font-bold text-slate-900">{event.name}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{event.date}</p>
+              </div>
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm">
+                <Users size={18} />
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-end">
+                <div className="space-y-1">
+                  <p className="text-2xl font-bold text-slate-900">{event.confirmedCount}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Confirmed</p>
+                </div>
+                <p className="text-xs font-bold text-slate-500">{Math.round((event.confirmedCount || 0) / (event.expectedCount || 1) * 100)}%</p>
+              </div>
+              <div className="w-full h-2 bg-white rounded-full overflow-hidden">
+                <div className="h-full bg-slate-900" style={{ width: `${(event.confirmedCount || 0) / (event.expectedCount || 1) * 100}%` }} />
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Invited</p>
+                  <p className="text-sm font-bold text-slate-900">{event.expectedCount}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tentative</p>
+                  <p className="text-sm font-bold text-slate-900">{Math.floor((event.expectedCount || 0) * 0.1)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
 
     <Card className="border-none shadow-2xl overflow-hidden">
       <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-white">
